@@ -10,8 +10,11 @@ import AVFoundation
 import AVKit
 
 
+func helloWord() -> Void {
+    print("1212")
+}
+
 class ViewController: UIViewController {
-    
     var asset: AVAsset!
     var item: AVPlayerItem!
     var player: AVPlayer!
@@ -21,45 +24,43 @@ class ViewController: UIViewController {
     var playerLayer: AVPlayerLayer!
     var timeString = "00:00:00"
     var timeInstruction: TimeVideoCompositionInstruction!
+    var lightTime: Double = 60.0
 
     let timeLabel = UILabel()
-    
+
     lazy var formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss.S"
         return formatter
     }()
-    
+
     @IBOutlet weak var pipButton: UIButton!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupVideo()
     }
-    
+
     @IBAction func startPIP(_ sender: UIButton) {
         pipController?.startPictureInPicture()
     }
-    
+
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
                                         selector: #selector(refresh))
-        displaylink.preferredFramesPerSecond = 10
+        displaylink.preferredFramesPerSecond = 1000
         displaylink.add(to: .current,
                         forMode: .default)
     }
-    
+
     @objc func refresh(displaylink: CADisplayLink) {
-        reloadTime()
+        reloadTime(timestamp: displaylink.duration)
         item?.videoComposition = videoComposition
     }
-    
-    func reloadTime() {
-        let date = Date()
-        self.timeString = formatter.string(from: date)
-        self.timeLabel.text = self.timeString
-        self.timeInstruction.timeString = timeString
+    func reloadTime(timestamp: Double) {
+        self.timeInstruction.timeString = lightTime
+        self.lightTime -= timestamp
     }
 }
 
@@ -148,21 +149,11 @@ extension ViewController {
     
     func setupUI() {
         playerLayer = AVPlayerLayer()
-        playerLayer.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        playerLayer.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
         playerLayer.position = view.center
         playerLayer.backgroundColor = UIColor.cyan.cgColor
         view.layer.addSublayer(playerLayer)
-        
-        timeLabel.backgroundColor = .white
-        timeLabel.textColor = .black
-        timeLabel.font = .systemFont(ofSize: 40)
-        view.addSubview(timeLabel)
-        
-        timeLabel.translatesAutoresizingMaskIntoConstraints = false
-        timeLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 80).isActive = true
-        timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        timeLabel.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        
+
         if !AVPictureInPictureController.isPictureInPictureSupported() {
             pipButton.setTitle("not support PIP, please use real device", for: .normal)
             pipButton.isEnabled = false

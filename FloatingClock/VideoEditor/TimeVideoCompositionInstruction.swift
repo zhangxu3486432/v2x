@@ -19,7 +19,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var layerInstructions:[AVVideoCompositionLayerInstruction]?
     
     // render string
-    var timeString = "00:00:00"
+    var timeString: Double = 0.0
     
 
     init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange) {
@@ -63,25 +63,26 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         let fontName = "San Francisco" as CFString
         let font = CTFontCreateWithName(fontName, fontSize, nil)
         
-        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font,
+        let _: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font,
                                                          NSAttributedString.Key.foregroundColor: color]
         // Text
-        let string = timeString
-        let attributedString = NSAttributedString(string: string,
-                                                  attributes: attributes)
-        
-        // Render
-        
-        let line = CTLineCreateWithAttributedString(attributedString)
-        let stringRect = CTLineGetImageBounds(line, context)
-        
-        context.textPosition = CGPoint(x: 100,
-                                       y: (CGFloat(height) - stringRect.height) / 2)
-        
-        CTLineDraw(line, context)
-        
-        context.restoreGState()
-        
+        let html: String = String(format:"<style type=\"text/css\">#blue{color: #00F; font-weight: Bold; font-size: 64}</style><span id=\"blue\">Green: %.2f</span>", arguments:[timeString])
+
+        let data = Data(html.utf8)
+        do {
+            let attributedString = try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
+            // Render
+            let line = CTLineCreateWithAttributedString(attributedString)
+            let stringRect = CTLineGetImageBounds(line, context)
+            
+            context.textPosition = CGPoint(x: (CGFloat(width) - stringRect.width) / 2,
+                                           y: (CGFloat(height) - stringRect.height) / 2)
+            
+            CTLineDraw(line, context)
+            context.restoreGState()
+        } catch {
+            
+        }
         
         CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
         return pixelBuffer
