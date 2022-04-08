@@ -9,7 +9,7 @@ import UIKit
 import AVFoundation
 
 class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionProtocol {
-   
+    
     // Protocol Property
     var timeRange: CMTimeRange
     var enablePostProcessing = false
@@ -18,10 +18,31 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var passthroughTrackID = kCMPersistentTrackID_Invalid
     var layerInstructions:[AVVideoCompositionLayerInstruction]?
     
-    // render string
-    var timeString: Double = 0.0
-    
 
+    var htmlRaw = """
+    <style type="text/css">
+    #Green {
+      color: #00c853;
+    }
+    #Yellow {
+      color: #ffd600;
+    }
+    #Red {
+      color: #d50000;
+    }
+    </style>
+    <span style="font-size: 64; font-weight: Bold;" id="%@">%@: %.2f</span>
+    """
+    
+    var lightLoading = """
+    <span style="font-size: 64; font-weight: Bold;">Loading</span>
+    """
+    
+    // render string
+    var timeString: Float = 0
+    var lightStatus: String = ""
+    
+    
     init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange) {
         self.requiredSourceTrackIDs = requiredSourceTrackIDs
         self.timeRange = timeRange
@@ -32,8 +53,8 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         let height = Int(renderContext.size.height)
         
         let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue as Any ,
-                     kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue as Any,
-                     kCVPixelBufferIOSurfacePropertiesKey: NSDictionary()
+             kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue as Any,
+                      kCVPixelBufferIOSurfacePropertiesKey: NSDictionary()
         ] as CFDictionary
         
         var pixelBuffer : CVPixelBuffer?
@@ -64,14 +85,21 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         let font = CTFontCreateWithName(fontName, fontSize, nil)
         
         let _: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font,
-                                                         NSAttributedString.Key.foregroundColor: color]
+                                                NSAttributedString.Key.foregroundColor: color]
         // Text
-        let html: String = String(format:"<style type=\"text/css\">#blue{color: #00F; font-weight: Bold; font-size: 64}</style><span id=\"blue\">Green: %.2f</span>", arguments:[timeString])
-
+        var html: String = ""
+        if lightStatus == "" {
+            html = String(format:lightLoading)
+        } else {
+            html = String(format:htmlRaw, arguments:[lightStatus, lightStatus, timeString])
+        }
+        
+        
         let data = Data(html.utf8)
         do {
             let attributedString = try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
             // Render
+//            print(attributedString)
             let line = CTLineCreateWithAttributedString(attributedString)
             let stringRect = CTLineGetImageBounds(line, context)
             

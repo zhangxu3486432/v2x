@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		344568CA28001F1E004A82B3 /* line.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 344568C928001F1E004A82B3 /* line.bmp */; };
 		34B9B90527F4429F005E03FB /* nebulalink.servercwaveii.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */; };
 		34B9B90827F443A3005E03FB /* nebulalink.servercwaveii.pb.swift in CopyFiles */ = {isa = PBXBuildFile; fileRef = 34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		34D24A3327F584BD009DA0FE /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 34D24A3227F584BD009DA0FE /* SwiftProtobuf */; };
 		34D24A3527F584BD009DA0FE /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 34D24A3427F584BD009DA0FE /* SwiftProtobufPluginLibrary */; };
+		34EF0F1A27FF2EE90092CBE1 /* TCP_Communicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34EF0F1927FF2EE90092CBE1 /* TCP_Communicator.swift */; };
 		7744CF76258A1E7000AB2136 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7744CF75258A1E7000AB2136 /* AppDelegate.swift */; };
 		7744CF78258A1E7000AB2136 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7744CF77258A1E7000AB2136 /* SceneDelegate.swift */; };
 		7744CF7A258A1E7000AB2136 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7744CF79258A1E7000AB2136 /* ViewController.swift */; };
@@ -56,9 +58,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		344568C928001F1E004A82B3 /* line.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = line.bmp; sourceTree = "<group>"; };
 		349DCBB427F5AF06008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		349DCBB527F5B088008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = nebulalink.servercwaveii.pb.swift; sourceTree = "<group>"; };
+		34EF0F1927FF2EE90092CBE1 /* TCP_Communicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TCP_Communicator.swift; sourceTree = "<group>"; };
 		7744CF72258A1E7000AB2136 /* V2X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = V2X.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7744CF75258A1E7000AB2136 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7744CF77258A1E7000AB2136 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -147,12 +151,14 @@
 		7744CF74258A1E7000AB2136 /* FloatingClock */ = {
 			isa = PBXGroup;
 			children = (
+				344568C928001F1E004A82B3 /* line.bmp */,
 				7787D626258CB9100052372E /* temp.mov */,
 				7744CFBC258A2D3A00AB2136 /* VideoEditor */,
 				34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */,
 				7744CF75258A1E7000AB2136 /* AppDelegate.swift */,
 				7744CF77258A1E7000AB2136 /* SceneDelegate.swift */,
 				7744CF79258A1E7000AB2136 /* ViewController.swift */,
+				34EF0F1927FF2EE90092CBE1 /* TCP_Communicator.swift */,
 				7744CF7B258A1E7000AB2136 /* Main.storyboard */,
 				7744CF7E258A1E7100AB2136 /* Assets.xcassets */,
 				7744CF80258A1E7100AB2136 /* LaunchScreen.storyboard */,
@@ -311,6 +317,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				344568CA28001F1E004A82B3 /* line.bmp in Resources */,
 				7787D627258CB9100052372E /* temp.mov in Resources */,
 				7744CF82258A1E7100AB2136 /* LaunchScreen.storyboard in Resources */,
 				7744CF7F258A1E7100AB2136 /* Assets.xcassets in Resources */,
@@ -339,6 +346,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34EF0F1A27FF2EE90092CBE1 /* TCP_Communicator.swift in Sources */,
 				7744CFBE258A2D6700AB2136 /* TimeVideoComposition.swift in Sources */,
 				7744CF7A258A1E7000AB2136 /* ViewController.swift in Sources */,
 				7744CF76258A1E7000AB2136 /* AppDelegate.swift in Sources */,
