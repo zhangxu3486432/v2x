@@ -10,11 +10,20 @@ import Foundation
 class TCP_Communicator: NSObject, StreamDelegate {
     var lightStatus: String = ""
     var lightTime: Float = 0
+    
+    // current gps speed
+    var currentSpeed: Double?
+    var redLightWarning: Bool = false
+    
     var readStream: Unmanaged<CFReadStream>?
     var writeStream: Unmanaged<CFWriteStream>?
     var inputStream: InputStream?
     var outputStream: OutputStream?
     var responseFramePool: [UInt8] = []
+    var glosa: String = ""
+    var recUpperSpeed: Double?
+    var recFloorSpeed: Double?
+    
     private var url: URL;
     private var port: UInt32;
     
@@ -59,24 +68,46 @@ class TCP_Communicator: NSObject, StreamDelegate {
             for result in results {
                 switch result.1 {
                 case "0002":
-                    let _ = try? NebulalinkProMessage_RegisterFrame(serializedData: result.0)
+                    do {
+                        let hostInfo = try NebulalinkProMessage_HostInfo(serializedData: result.0)
+                        if hostInfo.hostObuValue.first?.speed != nil {
+                            currentSpeed = Double(hostInfo.hostObuValue.first!.speed)
+                        }
+                    } catch {
+                        print("NebulalinkProMessage_HostInfo parse error")
+                    }
+                    
                 case "000A":
                     do {
-                        let trafficLightResult = try NebulalinkProMessage_TrafficLight(serializedData: result.0)
-                        let info = trafficLightResult.trafficLightInformationValue.first ?? nil
-                        let straight = info?.trafficLightPhaseValue.first ?? nil
-                        if straight?.phaseID != 1 {
-                            continue
+                        let trafficLight = try NebulalinkProMessage_TrafficLight(serializedData: result.0)
+                        let info = trafficLight.trafficLightInformationValue.first ?? nil
+                        
+                        if info == nil {
+                            break
                         }
+
+                        var straight: NebulalinkProMessage_TrafficLight.TrafficLightInformation.TrafficLightPhase?
+                        for trafficLightPhaseValueItem in info!.trafficLightPhaseValue {
+                            if trafficLightPhaseValueItem.phaseID != 1 {
+                                continue
+                            }
+                            straight = trafficLightPhaseValueItem
+                            break
+                        }
+                        
+                        if straight == nil {
+                            break
+                        }
+
                         for direction in straight!.phaseStatusValue {
                             if direction.startTime.isEqual(to: 0) {
                                 switch direction.lightStatus {
                                     case 6:
-                                        lightStatus = "Green"
+                                        lightStatus = "green"
                                     case 7:
-                                        lightStatus = "Yellow"
+                                        lightStatus = "yellow"
                                     case 3:
-                                        lightStatus = "Red"
+                                        lightStatus = "red"
                                     default:
                                         lightStatus = ""
                                 }
@@ -85,7 +116,47 @@ class TCP_Communicator: NSObject, StreamDelegate {
                         }
                     }
                     catch {
-                        print("parse error")
+                        print("NebulalinkProMessage_TrafficLight parse error")
+                    }
+                case "000F":
+                    do {
+                        let trafficLightResult = try NebulalinkProMessage_TrafficLightResult(serializedData: result.0)
+                        
+                        for trafficLightResultItem in trafficLightResult.trafficLightResultInformationValue {
+                            let phaseID = trafficLightResultItem.phaseID
+                            
+                            if phaseID != 1 {
+                                continue
+                            }
+//                            let direction = trafficLightResultItem.direction
+//                            let lightState = trafficLightResultItem.lightState
+//                            let timeRemaining = trafficLightResultItem.timeRemaining
+                            recUpperSpeed = trafficLightResultItem.recUpperSpeed
+                            recFloorSpeed = trafficLightResultItem.recFloorSpeed
+                            let decelRedBreak = trafficLightResultItem.decelRedBreak
+//                            print("phaseID: \(phaseID)\ndirection: \(direction)\nlightState: \(lightState)\ntimeRemaining: \(String(describing: timeRemaining))\ncurrentSpeed: \(String(describing: currentSpeed))\nrecUpperSpeed: \(recUpperSpeed)\nrecFloorSpeed: \(recFloorSpeed)\ndecelRedBreak: \(decelRedBreak)")
+                            if decelRedBreak.isEqual(to: 0) {
+                                redLightWarning = false
+                            } else {
+                                redLightWarning = true
+                            }
+                            
+                            if currentSpeed == nil {
+                                break
+                            }
+                            
+                            if currentSpeed! > recUpperSpeed! {
+                                glosa = "deceleration"
+                            } else if currentSpeed! < recFloorSpeed! {
+                                glosa = "acceleration"
+                            } else {
+                                glosa = "keep"
+                            }
+                            break
+                        }
+                    }
+                    catch {
+                        print("NebulalinkProMessage_TrafficLightResult parse error")
                     }
                 default:
                     continue

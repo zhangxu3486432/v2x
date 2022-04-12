@@ -25,9 +25,7 @@ class ViewController: UIViewController {
     var pipController: AVPictureInPictureController!
     var videoComposition: AVMutableVideoComposition!
     var playerLayer: AVPlayerLayer!
-    var timeString = "00:00:00"
     var timeInstruction: TimeVideoCompositionInstruction!
-    var lightTime: Double = 60.0
 
     let timeLabel = UILabel()
 
@@ -55,22 +53,23 @@ class ViewController: UIViewController {
         print("Socket Connect")
         socketConnector.connect()
     }
-
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
                                         selector: #selector(refresh))
-        displaylink.preferredFramesPerSecond = 1000
         displaylink.add(to: .current,
                         forMode: .default)
     }
 
     @objc func refresh(displaylink: CADisplayLink) {
-        reloadTime(timestamp: displaylink.duration)
+        reloadTime()
         item?.videoComposition = videoComposition
     }
-    func reloadTime(timestamp: Double) {
-        self.timeInstruction.timeString = socketConnector.lightTime
+    func reloadTime() {
+        self.timeInstruction.lightTime = Double(socketConnector.lightTime)
         self.timeInstruction.lightStatus = socketConnector.lightStatus
+        self.timeInstruction.redLightWarning = socketConnector.redLightWarning
+        self.timeInstruction.recFloorSpeed = socketConnector.recFloorSpeed
+        self.timeInstruction.recUpperSpeed = socketConnector.recUpperSpeed
     }
 }
 
@@ -131,7 +130,6 @@ extension ViewController {
     }
     
     func setupComposition()  {
-        
         // For best performance, ensure that the duration and tracks properties of the asset are already loaded before invoking this method.
         videoComposition = AVMutableVideoComposition(propertiesOf: asset!)
         let instructions = videoComposition.instructions as! [AVVideoCompositionInstruction]

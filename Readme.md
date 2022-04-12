@@ -1,20 +1,33 @@
+# README
 
+<!--@START_MENU_TOKEN@-->Summary<!--@END_MENU_TOKEN@-->
 
-### Floating-Clock App
+## Overview
 
-> Use `AVPictureInPictureController` It can hover over other apps.  Time display will not be affected by users
+<!--@START_MENU_TOKEN@-->Text<!--@END_MENU_TOKEN@-->
 
+## Topics
 
-if you use iphone, `AVPictureInPictureController` require iOS14 
+### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
 
-If you're going to run it in an simulator, the iPad's simulator supports picture-in-picture, but the iPhone doesn't
+- <!--@START_MENU_TOKEN@-->``Symbol``<!--@END_MENU_TOKEN@-->
 
-### 中文说明
-[知乎跳转连接](https://zhuanlan.zhihu.com/p/356483705)
+## Float Window
 
+* width 640
 
-### 1. PreView
+* height 360
 
-![demo.gif](Resource/demo.gif)
+## GLOSA
 
+Green Light Optimal Speed Advisory
 
+* HostInfo: 自身信息，即本设备的 ID、位置等信息
+
+* LogicalMap: 辑路网信息，主要是指道路连接关系，包括路口、路段等
+
+* TrafficLight: 交通信号灯信息，包括信号灯各相位的状态和配时
+
+* MapResult: 地图处理结果信息，给出当前车辆所在的路段及相关信息
+
+* TrafficLightResult: 信号灯处理结果，给出当前车辆前进方向上的 信号灯状态和配时以及车速引导计算结果
