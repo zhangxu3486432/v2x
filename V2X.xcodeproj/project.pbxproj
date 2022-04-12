@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		344568CA28001F1E004A82B3 /* line.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 344568C928001F1E004A82B3 /* line.bmp */; };
+		344568D2280030FF004A82B3 /* sample.svg in Resources */ = {isa = PBXBuildFile; fileRef = 344568D1280030FF004A82B3 /* sample.svg */; };
+		344568D528004038004A82B3 /* SwiftDraw in Frameworks */ = {isa = PBXBuildFile; productRef = 344568D428004038004A82B3 /* SwiftDraw */; };
+		344568D7280049F4004A82B3 /* test.svg in Resources */ = {isa = PBXBuildFile; fileRef = 344568D6280049F4004A82B3 /* test.svg */; };
 		34B9B90527F4429F005E03FB /* nebulalink.servercwaveii.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */; };
 		34B9B90827F443A3005E03FB /* nebulalink.servercwaveii.pb.swift in CopyFiles */ = {isa = PBXBuildFile; fileRef = 34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		34D24A3327F584BD009DA0FE /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 34D24A3227F584BD009DA0FE /* SwiftProtobuf */; };
@@ -59,6 +62,8 @@
 
 /* Begin PBXFileReference section */
 		344568C928001F1E004A82B3 /* line.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = line.bmp; sourceTree = "<group>"; };
+		344568D1280030FF004A82B3 /* sample.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = sample.svg; sourceTree = "<group>"; };
+		344568D6280049F4004A82B3 /* test.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = test.svg; sourceTree = "<group>"; };
 		349DCBB427F5AF06008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		349DCBB527F5B088008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = nebulalink.servercwaveii.pb.swift; sourceTree = "<group>"; };
@@ -90,6 +95,7 @@
 			files = (
 				34D24A3527F584BD009DA0FE /* SwiftProtobufPluginLibrary in Frameworks */,
 				34D24A3327F584BD009DA0FE /* SwiftProtobuf in Frameworks */,
+				344568D528004038004A82B3 /* SwiftDraw in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,6 +157,8 @@
 		7744CF74258A1E7000AB2136 /* FloatingClock */ = {
 			isa = PBXGroup;
 			children = (
+				344568D1280030FF004A82B3 /* sample.svg */,
+				344568D6280049F4004A82B3 /* test.svg */,
 				344568C928001F1E004A82B3 /* line.bmp */,
 				7787D626258CB9100052372E /* temp.mov */,
 				7744CFBC258A2D3A00AB2136 /* VideoEditor */,
@@ -226,6 +234,7 @@
 			packageProductDependencies = (
 				34D24A3227F584BD009DA0FE /* SwiftProtobuf */,
 				34D24A3427F584BD009DA0FE /* SwiftProtobufPluginLibrary */,
+				344568D428004038004A82B3 /* SwiftDraw */,
 			);
 			productName = FloatingClock;
 			productReference = 7744CF72258A1E7000AB2136 /* V2X.app */;
@@ -300,6 +309,7 @@
 			mainGroup = 7744CF69258A1E7000AB2136;
 			packageReferences = (
 				34D24A3127F584BD009DA0FE /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				344568D328004038004A82B3 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
 			);
 			productRefGroup = 7744CF73258A1E7000AB2136 /* Products */;
 			projectDirPath = "";
@@ -320,8 +330,10 @@
 				344568CA28001F1E004A82B3 /* line.bmp in Resources */,
 				7787D627258CB9100052372E /* temp.mov in Resources */,
 				7744CF82258A1E7100AB2136 /* LaunchScreen.storyboard in Resources */,
+				344568D7280049F4004A82B3 /* test.svg in Resources */,
 				7744CF7F258A1E7100AB2136 /* Assets.xcassets in Resources */,
 				7744CF7D258A1E7000AB2136 /* Main.storyboard in Resources */,
+				344568D2280030FF004A82B3 /* sample.svg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -690,6 +702,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		344568D328004038004A82B3 /* XCRemoteSwiftPackageReference "SwiftDraw" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swhitty/SwiftDraw";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.1;
+			};
+		};
 		34D24A3127F584BD009DA0FE /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
@@ -701,6 +721,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		344568D428004038004A82B3 /* SwiftDraw */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 344568D328004038004A82B3 /* XCRemoteSwiftPackageReference "SwiftDraw" */;
+			productName = SwiftDraw;
+		};
 		34D24A3227F584BD009DA0FE /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 34D24A3127F584BD009DA0FE /* XCRemoteSwiftPackageReference "swift-protobuf" */;

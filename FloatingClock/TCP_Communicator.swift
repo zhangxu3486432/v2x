@@ -143,10 +143,6 @@ class TCP_Communicator: NSObject, StreamDelegate {
                 continue
             }
 
-//            guard let boo = foo[safe: index] else {
-//              return
-//            }
-
             dataSerialization = Data(currentResponseFrame[8...dataLength+7])
             dataSet.append((dataSerialization, dataType))
         }

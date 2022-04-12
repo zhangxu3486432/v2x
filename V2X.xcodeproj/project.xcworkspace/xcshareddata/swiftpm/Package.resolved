@@ -9,6 +9,15 @@
           "revision": "e1499bc69b9040b29184f7f2996f7bab467c1639",
           "version": "1.19.0"
         }
+      },
+      {
+        "package": "SwiftDraw",
+        "repositoryURL": "https://github.com/swhitty/SwiftDraw",
+        "state": {
+          "branch": null,
+          "revision": "f8dc874b543d12e1a7bc7f85bf720dbd1cca7a03",
+          "version": "0.9.1"
+        }
       }
     ]
   },
