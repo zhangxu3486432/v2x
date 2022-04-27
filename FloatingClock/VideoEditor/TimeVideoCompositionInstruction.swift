@@ -8,6 +8,8 @@
 import UIKit
 import AVFoundation
 import SwiftDraw
+import AVFoundation
+import AVKit
 
 
 class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionProtocol {
@@ -18,7 +20,9 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var requiredSourceTrackIDs: [NSValue]?
     var passthroughTrackID = kCMPersistentTrackID_Invalid
     var layerInstructions:[AVVideoCompositionLayerInstruction]?
+    var preRedLightWarning: Bool?
     var redLightWarning: Bool = false
+    var pipController: AVPictureInPictureController?
     
     let greenSVG = UIImage(svgNamed: "green.svg")
     let yellowSVG = UIImage(svgNamed: "yellow.svg")
@@ -34,9 +38,10 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var recFloorSpeed: Double?
     
     
-    init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange) {
+    init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange, pipController: AVPictureInPictureController) {
         self.requiredSourceTrackIDs = requiredSourceTrackIDs
         self.timeRange = timeRange
+        self.pipController = pipController
     }
     
     func getPixelBuffer(_ renderContext: AVVideoCompositionRenderContext) -> CVPixelBuffer? {
@@ -106,6 +111,13 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         var attributedString = NSAttributedString(string: title, attributes: attributes)
         var titleText = CTLineCreateWithAttributedString(attributedString)
         
+        if redLightWarning == true && preRedLightWarning != redLightWarning {
+            pipController?.startPictureInPicture()
+        } else if redLightWarning == false && preRedLightWarning != redLightWarning {
+            pipController?.stopPictureInPicture()
+        }
+        
+        preRedLightWarning = redLightWarning
         if redLightWarning {
             fontSize = 64
             font = CTFontCreateWithName(fontName, fontSize, nil)
@@ -144,28 +156,29 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             )
             context.addPath(path)
             context.textPosition = CGPoint(x: 68, y: 240)
-        } else {
-            title = "Green Light Speed"
-            color = CGColor.init(red: 1, green: 1, blue: 1, alpha: 1)
-            context.textPosition = CGPoint(x: 20, y: 240)
-            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-            attributedString = NSAttributedString(string: title, attributes: attributes)
-            titleText = CTLineCreateWithAttributedString(attributedString)
-            CTLineDraw(titleText, context)
-            
-            // 建议车速
-            fontSize = 64
-            font = CTFontCreateWithName(fontName, fontSize, nil)
-            if recFloorSpeed != nil && recUpperSpeed != nil {
-                attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-                attributedString = NSAttributedString(string: String(format:"%d-%d km/h", arguments: [Int(ceilf(Float(recFloorSpeed!)*3.6)), Int(ceilf(Float(recUpperSpeed!)*3.6))]),
-                                                      attributes: attributes)
-                titleText = CTLineCreateWithAttributedString(attributedString)
-                context.textPosition = CGPoint(x: 20, y: 120)
-                CTLineDraw(titleText, context)
-            }
         }
-        
+//        {
+//            title = "Green Light Speed"
+//            color = CGColor.init(red: 1, green: 1, blue: 1, alpha: 1)
+//            context.textPosition = CGPoint(x: 20, y: 240)
+//            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+//            attributedString = NSAttributedString(string: title, attributes: attributes)
+//            titleText = CTLineCreateWithAttributedString(attributedString)
+//            CTLineDraw(titleText, context)
+//
+//            // 建议车速
+//            fontSize = 64
+//            font = CTFontCreateWithName(fontName, fontSize, nil)
+//            if recFloorSpeed != nil && recUpperSpeed != nil {
+//                attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+//                attributedString = NSAttributedString(string: String(format:"%d-%d km/h", arguments: [Int(ceilf(Float(recFloorSpeed!)*3.6)), Int(ceilf(Float(recUpperSpeed!)*3.6))]),
+//                                                      attributes: attributes)
+//                titleText = CTLineCreateWithAttributedString(attributedString)
+//                context.textPosition = CGPoint(x: 20, y: 120)
+//                CTLineDraw(titleText, context)
+//            }
+//        }
+
         // 时间
         attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
         attributedString = NSAttributedString(string: String(format:"%02d S", arguments: [Int(ceilf(Float(lightTime)))]), attributes: attributes)

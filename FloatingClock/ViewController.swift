@@ -11,6 +11,10 @@ import AVKit
 
 let urlStr: String = "17.87.18.129"
 let port: Int = 6000
+var count: Int = 0
+var now: Date?
+var timeInterval: TimeInterval?
+var timeStamp: Int?
 
 let url = URL(string: urlStr)!
 
@@ -44,9 +48,10 @@ class ViewController: UIViewController {
     }
 
     @IBAction func startPIP(_ sender: UIButton) {
+        socketConnector.connect()
         let registerData:[UInt8] = [250, 251, 252, 253, 0, 1, 0, 175, 8, 1, 18, 11, 97, 112, 112, 108, 101, 95, 115, 119, 105, 102, 116, 26, 8, 8, 1, 16, 1, 24, 160, 141, 6, 26, 8, 8, 2, 16, 1, 24, 160, 141, 6, 26, 8, 8, 3, 16, 1, 24, 160, 141, 6, 26, 8, 8, 4, 16, 1, 24, 160, 141, 6, 26, 8, 8, 5, 16, 1, 24, 160, 141, 6, 26, 8, 8, 6, 16, 1, 24, 160, 141, 6, 26, 8, 8, 7, 16, 1, 24, 160, 141, 6, 26, 8, 8, 8, 16, 1, 24, 160, 141, 6, 26, 8, 8, 9, 16, 1, 24, 160, 141, 6, 26, 8, 8, 10, 16, 1, 24, 160, 141, 6, 26, 8, 8, 11, 16, 1, 24, 160, 141, 6, 26, 8, 8, 12, 16, 1, 24, 160, 141, 6, 26, 8, 8, 13, 16, 1, 24, 160, 141, 6, 26, 8, 8, 14, 16, 1, 24, 160, 141, 6, 26, 8, 8, 15, 16, 1, 24, 160, 141, 6, 26, 8, 8, 16, 16, 1, 24, 160, 141, 6, 234, 235, 236, 237]
         socketConnector.send(buff: registerData)
-        pipController?.startPictureInPicture()
+//        pipController?.startPictureInPicture()
     }
     
     @IBAction func V2XConnect(_ sender: UIButton) {
@@ -56,6 +61,7 @@ class ViewController: UIViewController {
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
                                         selector: #selector(refresh))
+        displaylink.preferredFramesPerSecond = 10
         displaylink.add(to: .current,
                         forMode: .default)
     }
@@ -65,9 +71,17 @@ class ViewController: UIViewController {
         item?.videoComposition = videoComposition
     }
     func reloadTime() {
+        now = Date()
+        timeInterval = now!.timeIntervalSince1970
+        timeStamp = Int(CLongLong(round(timeInterval!*1000)))
+        if timeStamp! - (socketConnector.timeStamp ?? 0)! > 800 {
+            self.timeInstruction.redLightWarning = false
+        } else {
+            self.timeInstruction.redLightWarning = true
+        }
+        
         self.timeInstruction.lightTime = Double(socketConnector.lightTime)
         self.timeInstruction.lightStatus = socketConnector.lightStatus
-        self.timeInstruction.redLightWarning = socketConnector.redLightWarning
         self.timeInstruction.recFloorSpeed = socketConnector.recFloorSpeed
         self.timeInstruction.recUpperSpeed = socketConnector.recUpperSpeed
     }
@@ -94,6 +108,7 @@ extension ViewController {
         
         playerLayer.player = player
         pipController = AVPictureInPictureController(playerLayer: playerLayer)
+        pipController.requiresLinearPlayback = true
         pipController?.delegate = self
         
         observation = player?.observe(\.status, options: .new, changeHandler: {[weak self] (player, _) in
@@ -144,7 +159,7 @@ extension ViewController {
         for layerInstruction in layerInstructions {
             trackIDs.append(layerInstruction.trackID)
         }
-        timeInstruction = TimeVideoCompositionInstruction(trackIDs as [NSValue], timeRange: instruction.timeRange)
+        timeInstruction = TimeVideoCompositionInstruction(trackIDs as [NSValue], timeRange: instruction.timeRange, pipController: pipController)
         timeInstruction.layerInstructions = layerInstructions
         newInstructions.append(timeInstruction)
         videoComposition.instructions = newInstructions

@@ -7,13 +7,21 @@
 
 import Foundation
 
+var headStraight:[Int32] = [1, 6, 11, 16, 21, 26, 31, 36]
+var preTime: Float?
+var preLightSatus: String?
+
 class TCP_Communicator: NSObject, StreamDelegate {
     var lightStatus: String = ""
     var lightTime: Float = 0
+    var count: Float = 0
+    
+    var now: Date?
+    var timeInterval: TimeInterval?
+    var timeStamp: Int?
     
     // current gps speed
     var currentSpeed: Double?
-    var redLightWarning: Bool = false
     
     var readStream: Unmanaged<CFReadStream>?
     var writeStream: Unmanaged<CFWriteStream>?
@@ -55,9 +63,7 @@ class TCP_Communicator: NSObject, StreamDelegate {
     }
     
     func send(buff: [UInt8]){
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.sendData(buff: buff)
-        }
+        self.sendData(buff: buff)
     }
     
     func readAvailableBytes() {
@@ -76,48 +82,6 @@ class TCP_Communicator: NSObject, StreamDelegate {
                     } catch {
                         print("NebulalinkProMessage_HostInfo parse error")
                     }
-                    
-                case "000A":
-                    do {
-                        let trafficLight = try NebulalinkProMessage_TrafficLight(serializedData: result.0)
-                        let info = trafficLight.trafficLightInformationValue.first ?? nil
-                        
-                        if info == nil {
-                            break
-                        }
-
-                        var straight: NebulalinkProMessage_TrafficLight.TrafficLightInformation.TrafficLightPhase?
-                        for trafficLightPhaseValueItem in info!.trafficLightPhaseValue {
-                            if trafficLightPhaseValueItem.phaseID != 1 {
-                                continue
-                            }
-                            straight = trafficLightPhaseValueItem
-                            break
-                        }
-                        
-                        if straight == nil {
-                            break
-                        }
-
-                        for direction in straight!.phaseStatusValue {
-                            if direction.startTime.isEqual(to: 0) {
-                                switch direction.lightStatus {
-                                    case 6:
-                                        lightStatus = "green"
-                                    case 7:
-                                        lightStatus = "yellow"
-                                    case 3:
-                                        lightStatus = "red"
-                                    default:
-                                        lightStatus = ""
-                                }
-                                lightTime = direction.endTime
-                            }
-                        }
-                    }
-                    catch {
-                        print("NebulalinkProMessage_TrafficLight parse error")
-                    }
                 case "000F":
                     do {
                         let trafficLightResult = try NebulalinkProMessage_TrafficLightResult(serializedData: result.0)
@@ -125,21 +89,36 @@ class TCP_Communicator: NSObject, StreamDelegate {
                         for trafficLightResultItem in trafficLightResult.trafficLightResultInformationValue {
                             let phaseID = trafficLightResultItem.phaseID
                             
-                            if phaseID != 1 {
+                            if !headStraight.contains(phaseID) {
                                 continue
+                            } else {
+                                now = Date()
+                                timeInterval = now!.timeIntervalSince1970
+                                timeStamp = Int(CLongLong(round(timeInterval!*1000)))
                             }
-//                            let direction = trafficLightResultItem.direction
-//                            let lightState = trafficLightResultItem.lightState
-//                            let timeRemaining = trafficLightResultItem.timeRemaining
+                            
+                            let lightState = trafficLightResultItem.lightState
+                            let timeRemaining = trafficLightResultItem.timeRemaining
                             recUpperSpeed = trafficLightResultItem.recUpperSpeed
                             recFloorSpeed = trafficLightResultItem.recFloorSpeed
-                            let decelRedBreak = trafficLightResultItem.decelRedBreak
-//                            print("phaseID: \(phaseID)\ndirection: \(direction)\nlightState: \(lightState)\ntimeRemaining: \(String(describing: timeRemaining))\ncurrentSpeed: \(String(describing: currentSpeed))\nrecUpperSpeed: \(recUpperSpeed)\nrecFloorSpeed: \(recFloorSpeed)\ndecelRedBreak: \(decelRedBreak)")
-                            if decelRedBreak.isEqual(to: 0) {
-                                redLightWarning = false
-                            } else {
-                                redLightWarning = true
+                            
+                            switch lightState {
+                            case 6:
+                                lightStatus = "green"
+                            case 7:
+                                lightStatus = "yellow"
+                            case 3:
+                                lightStatus = "red"
+                            default:
+                                lightStatus = ""
                             }
+                            
+                            if preTime == nil || preLightSatus == nil || preLightSatus != lightStatus || preTime! >= Float(timeRemaining) {
+                                lightTime = Float(timeRemaining)
+                            }
+                            
+                            preTime = Float(timeRemaining)
+                            preLightSatus = lightStatus
                             
                             if currentSpeed == nil {
                                 break
@@ -213,7 +192,7 @@ class TCP_Communicator: NSObject, StreamDelegate {
             if (currentResponseFrame.count - 1) < dataLength+7 {
                 continue
             }
-
+            
             dataSerialization = Data(currentResponseFrame[8...dataLength+7])
             dataSet.append((dataSerialization, dataType))
         }

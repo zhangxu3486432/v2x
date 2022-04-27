@@ -46,8 +46,6 @@ class VideoCreator {
         videoWrite.finishWriting {
             print(videoWrite.status)
         }
-        
-        
     }
     
     fileprivate func getCMSampleBuffer() -> CMSampleBuffer {

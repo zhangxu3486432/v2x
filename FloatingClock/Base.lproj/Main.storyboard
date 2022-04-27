@@ -18,20 +18,11 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MBU-1H-Iiu">
-                                <rect key="frame" x="186" y="395" width="43" height="48"/>
+                                <rect key="frame" x="176" y="424" width="63" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                <state key="normal" title="PIP"/>
+                                <state key="normal" title="Start"/>
                                 <connections>
                                     <action selector="startPIP:" destination="BYZ-38-t0r" eventType="touchUpInside" id="sTe-a7-SRt"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="Nad-LL-PaJ">
-                                <rect key="frame" x="121" y="269" width="173" height="48"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                <state key="normal" title="V2X Connect"/>
-                                <connections>
-                                    <action selector="V2XConnect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wH7-Ta-Dy4"/>
                                 </connections>
                             </button>
                         </subviews>
