@@ -66,8 +66,8 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             return nil
         }
         
-        context.setFillColor(UIColor(red: 0, green: 0, blue: 0, alpha: 1).cgColor)
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        context.setFillColor(UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor)
+//        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         context.saveGState()
         
         // Parameters
@@ -80,35 +80,37 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         
         var rect = CGRect(x: 420, y: 120, width: 200, height: 200)
         context.addRect(rect)
-        switch lightStatus {
-        case "green":
-            context.draw((greenSVG?.cgImage)!, in: rect)
-            timeColor = CGColor.init(red: 0, green: 0.5, blue: 0, alpha: 1)
-        case "red":
-            context.draw((redSVG?.cgImage)!, in: rect)
-            timeColor = CGColor.init(red: 1, green: 0, blue: 0, alpha: 1)
-        case "yellow":
-            context.draw((yellowSVG?.cgImage)!, in: rect)
-            timeColor = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
-        default:
-            context.draw((loadingSVG?.cgImage)!, in: rect)
-            timeColor = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1)
-        }
-        var path = CGPath(
-            roundedRect: rect,
-            cornerWidth: 0.0,
-            cornerHeight: 0.0,
-            transform: nil
-        )
-        context.addPath(path)
-        
-        // Text
-        var title: String = ""
-        var attributes: [NSAttributedString.Key: Any] = [:]
-        var attributedString = NSAttributedString(string: title, attributes: attributes)
-        var titleText = CTLineCreateWithAttributedString(attributedString)
-        
+
+
         if redLightWarning {
+            switch lightStatus {
+            case "green":
+                context.draw((greenSVG?.cgImage)!, in: rect)
+                timeColor = CGColor.init(red: 0, green: 0.5, blue: 0, alpha: 1)
+            case "red":
+                context.draw((redSVG?.cgImage)!, in: rect)
+                timeColor = CGColor.init(red: 1, green: 0, blue: 0, alpha: 1)
+            case "yellow":
+                context.draw((yellowSVG?.cgImage)!, in: rect)
+                timeColor = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
+            default:
+                context.draw((loadingSVG?.cgImage)!, in: rect)
+                timeColor = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1)
+            }
+            
+            var path = CGPath(
+                roundedRect: rect,
+                cornerWidth: 0.0,
+                cornerHeight: 0.0,
+                transform: nil
+            )
+            context.addPath(path)
+
+            var title: String = ""
+            var attributes: [NSAttributedString.Key: Any] = [:]
+            var attributedString = NSAttributedString(string: title, attributes: attributes)
+            var titleText = CTLineCreateWithAttributedString(attributedString)
+            
             fontSize = 64
             font = CTFontCreateWithName(fontName, fontSize, nil)
             
@@ -146,6 +148,13 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             )
             context.addPath(path)
             context.textPosition = CGPoint(x: 68, y: 240)
+            
+            
+            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+            attributedString = NSAttributedString(string: String(format:"%02d S", arguments: [Int(ceilf(Float(lightTime)))]), attributes: attributes)
+            titleText = CTLineCreateWithAttributedString(attributedString)
+            context.textPosition = CGPoint(x: 460, y: 60)
+            CTLineDraw(titleText, context)
         }
 //        else {
 //            title = "Green Light Speed"
@@ -170,12 +179,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
 //        }
 
         // 时间
-        attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-        attributedString = NSAttributedString(string: String(format:"%02d S", arguments: [Int(ceilf(Float(lightTime)))]), attributes: attributes)
-        titleText = CTLineCreateWithAttributedString(attributedString)
-        context.textPosition = CGPoint(x: 460, y: 60)
-        CTLineDraw(titleText, context)
-        
+
         context.fillPath(using: .evenOdd)
         context.restoreGState()
         CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))

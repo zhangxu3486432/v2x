@@ -25,7 +25,6 @@ var socketConnector:TCP_Communicator = TCP_Communicator(url: url, port: UInt32(p
 
 
 class ViewController: UIViewController {
-    var videoLife = false
     var asset: AVAsset!
     var item: AVPlayerItem!
     var player: AVPlayer!
@@ -34,7 +33,7 @@ class ViewController: UIViewController {
     var videoComposition: AVMutableVideoComposition!
     var playerLayer: AVPlayerLayer!
     var timeInstruction: TimeVideoCompositionInstruction!
-    var preRedLightWarning: Bool?
+    var preRedLightWarning: Bool = false
     var redLightWarning: Bool = false
 
     @IBOutlet weak var pipButton: UIButton!
@@ -43,12 +42,10 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupVideo()
-        self.videoLife = true
     }
     
     func destroy() {
         self.player = nil
-        self.videoLife = false
         self.asset = nil
         self.item = nil
         self.observation = nil
@@ -77,17 +74,10 @@ class ViewController: UIViewController {
     }
 
     @objc func refresh(displaylink: CADisplayLink) {
-        if (!self.videoLife) {
-            self.viewDidLoad()
-        }
         reloadTime()
         item?.videoComposition = videoComposition
     }
     func reloadTime() {
-        if (preRedLightWarning == nil) {
-            preRedLightWarning = self.timeInstruction.redLightWarning
-        }
-        
         now = Date()
         timeInterval = now!.timeIntervalSince1970
         timeStamp = Int(CLongLong(round(timeInterval!*1000)))
@@ -96,15 +86,15 @@ class ViewController: UIViewController {
         } else {
             redLightWarning = true
         }
-        if redLightWarning == true && preRedLightWarning != true {
-            print("---------------------------")
+        
+        if redLightWarning == true && preRedLightWarning != redLightWarning {
+            print("start")
             pipController?.startPictureInPicture()
-        } else if redLightWarning == false && preRedLightWarning != false {
-            print("---------")
+        } else if redLightWarning == false && preRedLightWarning != redLightWarning {
+            print("stop")
             pipController?.stopPictureInPicture()
-//            self.destroy()
         }
-
+        
         preRedLightWarning = self.timeInstruction.redLightWarning
 
         self.timeInstruction.redLightWarning = redLightWarning
@@ -133,7 +123,7 @@ extension ViewController {
         asset = AVAsset(url: url)
         item = AVPlayerItem(asset: asset!)
         player = AVPlayer(playerItem: item)
-        
+
         playerLayer.player = player
         pipController = AVPictureInPictureController(playerLayer: playerLayer)
         pipController.requiresLinearPlayback = true
@@ -195,18 +185,17 @@ extension ViewController {
         self.videoComposition?.customVideoCompositorClass = TimeVideoComposition.self
         item?.videoComposition = videoComposition
     }
-    
-    
-    
+
     func setupUI() {
         playerLayer = AVPlayerLayer()
         playerLayer.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
         playerLayer.position = view.center
-        playerLayer.backgroundColor = UIColor.cyan.cgColor
+//        playerLayer.backgroundColor = UIColor.cyan.cgColor
+        playerLayer.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor
         view.layer.addSublayer(playerLayer)
-//        if !AVPictureInPictureController.isPictureInPictureSupported() {
-//            pipButton.setTitle("not support PIP, please use real device", for: .normal)
-//            pipButton.isEnabled = false
-//        }
+        if !AVPictureInPictureController.isPictureInPictureSupported() {
+            pipButton.setTitle("not support PIP, please use real device", for: .normal)
+            pipButton.isEnabled = false
+        }
     }
 }
