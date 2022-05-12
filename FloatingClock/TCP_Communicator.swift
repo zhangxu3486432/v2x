@@ -32,6 +32,7 @@ class TCP_Communicator: NSObject, StreamDelegate {
     var glosa: String = ""
     var recUpperSpeed: Double?
     var recFloorSpeed: Double?
+    var decelRedBreak: Bool?
     
     private var url: URL;
     private var port: UInt32;
@@ -42,7 +43,6 @@ class TCP_Communicator: NSObject, StreamDelegate {
         case .openCompleted:
             print("Stream opened")
         case .hasBytesAvailable:
-            //            print("hasBytesAvailable")
             if aStream === inputStream {
                 readAvailableBytes()
             }
@@ -103,6 +103,11 @@ class TCP_Communicator: NSObject, StreamDelegate {
                             recUpperSpeed = trafficLightResultItem.recUpperSpeed
                             recFloorSpeed = trafficLightResultItem.recFloorSpeed
                             
+                            if trafficLightResultItem.decelRedBreak > 0.8 {
+                                decelRedBreak = true
+                            } else {
+                                decelRedBreak = false
+                            }
                             switch lightState {
                             case 6:
                                 lightStatus = "green"
@@ -126,9 +131,9 @@ class TCP_Communicator: NSObject, StreamDelegate {
                             }
                             
                             if currentSpeed! > recUpperSpeed! {
-                                glosa = "deceleration"
+                                glosa = "decelerate"
                             } else if currentSpeed! < recFloorSpeed! {
-                                glosa = "acceleration"
+                                glosa = "accelerate"
                             } else {
                                 glosa = "keep"
                             }

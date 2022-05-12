@@ -20,13 +20,15 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var requiredSourceTrackIDs: [NSValue]?
     var passthroughTrackID = kCMPersistentTrackID_Invalid
     var layerInstructions:[AVVideoCompositionLayerInstruction]?
-    var redLightWarning: Bool = false
+    var haveTrafficLight: Bool = false
     
     let greenSVG = UIImage(svgNamed: "green.svg")
     let yellowSVG = UIImage(svgNamed: "yellow.svg")
     let redSVG = UIImage(svgNamed: "red.svg")
     let loadingSVG = UIImage(svgNamed: "loading.svg")
     let warningSVG = UIImage(svgNamed: "warning.svg")
+    let accelerateSVG = UIImage(svgNamed: "accelerate.svg")
+    let decelerateSVG = UIImage(svgNamed: "decelerate.svg")
     
     // render string
     var lightTime: Double = 0
@@ -34,6 +36,14 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     
     var recUpperSpeed: Double?
     var recFloorSpeed: Double?
+    var glosa: String?
+    var decelRedBreak: Bool?
+    var count = 0
+    
+//    var fontSize: CGFloat = 46
+//    let fontName = "San Francisco" as CFString
+    var font46 = CTFontCreateWithName("San Francisco" as CFString, 46, nil)
+    var font64 = CTFontCreateWithName("San Francisco" as CFString, 64, nil)
     
     
     init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange) {
@@ -66,23 +76,18 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             return nil
         }
         
-        context.setFillColor(UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor)
-//        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        context.setFillColor(UIColor(red: 0, green: 0, blue: 0, alpha: 1).cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         context.saveGState()
         
         // Parameters
         var color: CGColor?
         var timeColor: CGColor?
-        var fontSize: CGFloat = 46
-        // You can use the Font Book app to find the name
-        let fontName = "San Francisco" as CFString
-        var font = CTFontCreateWithName(fontName, fontSize, nil)
-        
-        var rect = CGRect(x: 420, y: 120, width: 200, height: 200)
-        context.addRect(rect)
 
-
-        if redLightWarning {
+        if haveTrafficLight {
+            var rect = CGRect(x: 420, y: 120, width: 200, height: 200)
+            context.addRect(rect)
+            
             switch lightStatus {
             case "green":
                 context.draw((greenSVG?.cgImage)!, in: rect)
@@ -106,76 +111,95 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             )
             context.addPath(path)
 
+            // --------------------
             var title: String = ""
             var attributes: [NSAttributedString.Key: Any] = [:]
             var attributedString = NSAttributedString(string: title, attributes: attributes)
             var titleText = CTLineCreateWithAttributedString(attributedString)
             
-            fontSize = 64
-            font = CTFontCreateWithName(fontName, fontSize, nil)
-            
-            title = "Warning:"
-            color = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
-            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-            attributedString = NSAttributedString(string: title, attributes: attributes)
-            titleText = CTLineCreateWithAttributedString(attributedString)
-            context.textPosition = CGPoint(x: 100, y: 240)
-            CTLineDraw(titleText, context)
-            
-            title = "Red Light"
-            color = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
-            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-            attributedString = NSAttributedString(string: title, attributes: attributes)
-            titleText = CTLineCreateWithAttributedString(attributedString)
-            context.textPosition = CGPoint(x: 20, y: 160)
-            CTLineDraw(titleText, context)
-            
-            title = "Violation"
-            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-            attributedString = NSAttributedString(string: title, attributes: attributes)
-            titleText = CTLineCreateWithAttributedString(attributedString)
-            context.textPosition = CGPoint(x: 20, y: 80)
-            CTLineDraw(titleText, context)
+            if decelRedBreak == true {
+                title = "Warning:"
+                color = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
+                attributes = [NSAttributedString.Key.font: font64, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                attributedString = NSAttributedString(string: title, attributes: attributes)
+                titleText = CTLineCreateWithAttributedString(attributedString)
+                context.textPosition = CGPoint(x: 100, y: 240)
+                CTLineDraw(titleText, context)
+                
+                title = "Red Light"
+                color = CGColor.init(red: 1, green: 1, blue: 0, alpha: 1)
+                attributes = [NSAttributedString.Key.font: font64, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                attributedString = NSAttributedString(string: title, attributes: attributes)
+                titleText = CTLineCreateWithAttributedString(attributedString)
+                context.textPosition = CGPoint(x: 20, y: 160)
+                CTLineDraw(titleText, context)
+                
+                title = "Violation"
+                attributes = [NSAttributedString.Key.font: font64, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                attributedString = NSAttributedString(string: title, attributes: attributes)
+                titleText = CTLineCreateWithAttributedString(attributedString)
+                context.textPosition = CGPoint(x: 20, y: 80)
+                CTLineDraw(titleText, context)
+                
+                rect = CGRect(x: 20, y: 240, width: 60, height: 60)
+                context.addRect(rect)
+                context.draw((warningSVG?.cgImage)!, in: rect)
+                path = CGPath(
+                    roundedRect: rect,
+                    cornerWidth: 0.0,
+                    cornerHeight: 0.0,
+                    transform: nil
+                )
+                context.addPath(path)
+            } else {
+                title = "Green Light Speed"
+                color = CGColor.init(red: 1, green: 1, blue: 1, alpha: 1)
+                context.textPosition = CGPoint(x: 20, y: 240)
+                attributes = [NSAttributedString.Key.font: font46, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                attributedString = NSAttributedString(string: title, attributes: attributes)
+                titleText = CTLineCreateWithAttributedString(attributedString)
+                CTLineDraw(titleText, context)
 
-            rect = CGRect(x: 20, y: 240, width: 60, height: 60)
-            context.addRect(rect)
-            context.draw((warningSVG?.cgImage)!, in: rect)
-            path = CGPath(
-                roundedRect: rect,
-                cornerWidth: 0.0,
-                cornerHeight: 0.0,
-                transform: nil
-            )
-            context.addPath(path)
-            context.textPosition = CGPoint(x: 68, y: 240)
-            
-            
-            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                // 建议车速
+                if recFloorSpeed != nil && recUpperSpeed != nil {
+                    attributes = [NSAttributedString.Key.font: font64, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
+                    attributedString = NSAttributedString(string: String(format:"%d-%d km/h", arguments: [Int(ceilf(Float(recFloorSpeed!)*3.6)), Int(ceilf(Float(recUpperSpeed!)*3.6))]),
+                                                          attributes: attributes)
+                    titleText = CTLineCreateWithAttributedString(attributedString)
+                    context.textPosition = CGPoint(x: 90, y: 120)
+                    CTLineDraw(titleText, context)
+                }
+                
+                rect = CGRect(x: 20, y: 110, width: 60, height: 60)
+                context.addRect(rect)
+                // 加减速 icon
+                switch glosa {
+                case "keep":
+                    print("keep")
+                case "accelerate":
+                    context.draw((accelerateSVG?.cgImage)!, in: rect)
+                case "decelerate":
+                    context.draw((decelerateSVG?.cgImage)!, in: rect)
+                default:
+                    print("unknow")
+                }
+                path = CGPath(
+                    roundedRect: rect,
+                    cornerWidth: 0.0,
+                    cornerHeight: 0.0,
+                    transform: nil
+                )
+                context.addPath(path)
+            }
+            // --------------------
+
+            attributes = [NSAttributedString.Key.font: font64, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
             attributedString = NSAttributedString(string: String(format:"%02d S", arguments: [Int(ceilf(Float(lightTime)))]), attributes: attributes)
             titleText = CTLineCreateWithAttributedString(attributedString)
             context.textPosition = CGPoint(x: 460, y: 60)
             CTLineDraw(titleText, context)
         }
 //        else {
-//            title = "Green Light Speed"
-//            color = CGColor.init(red: 1, green: 1, blue: 1, alpha: 1)
-//            context.textPosition = CGPoint(x: 20, y: 240)
-//            attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: color!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-//            attributedString = NSAttributedString(string: title, attributes: attributes)
-//            titleText = CTLineCreateWithAttributedString(attributedString)
-//            CTLineDraw(titleText, context)
-//
-//            // 建议车速
-//            fontSize = 64
-//            font = CTFontCreateWithName(fontName, fontSize, nil)
-//            if recFloorSpeed != nil && recUpperSpeed != nil {
-//                attributes = [NSAttributedString.Key.font: font, NSAttributedString.Key.foregroundColor: timeColor!, NSAttributedString.Key.strokeWidth: NSNumber(-6)]
-//                attributedString = NSAttributedString(string: String(format:"%d-%d km/h", arguments: [Int(ceilf(Float(recFloorSpeed!)*3.6)), Int(ceilf(Float(recUpperSpeed!)*3.6))]),
-//                                                      attributes: attributes)
-//                titleText = CTLineCreateWithAttributedString(attributedString)
-//                context.textPosition = CGPoint(x: 20, y: 120)
-//                CTLineDraw(titleText, context)
-//            }
 //        }
 
         // 时间

@@ -33,8 +33,8 @@ class ViewController: UIViewController {
     var videoComposition: AVMutableVideoComposition!
     var playerLayer: AVPlayerLayer!
     var timeInstruction: TimeVideoCompositionInstruction!
-    var preRedLightWarning: Bool = false
-    var redLightWarning: Bool = false
+    var preHaveTrafficLight: Bool = false
+    var haveTrafficLight: Bool = false
 
     @IBOutlet weak var pipButton: UIButton!
 
@@ -58,7 +58,7 @@ class ViewController: UIViewController {
         socketConnector.connect()
         let registerData:[UInt8] = [250, 251, 252, 253, 0, 1, 0, 175, 8, 1, 18, 11, 97, 112, 112, 108, 101, 95, 115, 119, 105, 102, 116, 26, 8, 8, 1, 16, 1, 24, 160, 141, 6, 26, 8, 8, 2, 16, 1, 24, 160, 141, 6, 26, 8, 8, 3, 16, 1, 24, 160, 141, 6, 26, 8, 8, 4, 16, 1, 24, 160, 141, 6, 26, 8, 8, 5, 16, 1, 24, 160, 141, 6, 26, 8, 8, 6, 16, 1, 24, 160, 141, 6, 26, 8, 8, 7, 16, 1, 24, 160, 141, 6, 26, 8, 8, 8, 16, 1, 24, 160, 141, 6, 26, 8, 8, 9, 16, 1, 24, 160, 141, 6, 26, 8, 8, 10, 16, 1, 24, 160, 141, 6, 26, 8, 8, 11, 16, 1, 24, 160, 141, 6, 26, 8, 8, 12, 16, 1, 24, 160, 141, 6, 26, 8, 8, 13, 16, 1, 24, 160, 141, 6, 26, 8, 8, 14, 16, 1, 24, 160, 141, 6, 26, 8, 8, 15, 16, 1, 24, 160, 141, 6, 26, 8, 8, 16, 16, 1, 24, 160, 141, 6, 234, 235, 236, 237]
         socketConnector.send(buff: registerData)
-//        pipController?.startPictureInPicture()
+        pipController?.startPictureInPicture()
     }
     
     @IBAction func V2XConnect(_ sender: UIButton) {
@@ -68,7 +68,8 @@ class ViewController: UIViewController {
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
                                         selector: #selector(refresh))
-        displaylink.preferredFramesPerSecond = 10
+        // 每秒渲染两帧
+        displaylink.preferredFramesPerSecond = 2
         displaylink.add(to: .current,
                         forMode: .default)
     }
@@ -82,22 +83,25 @@ class ViewController: UIViewController {
         timeInterval = now!.timeIntervalSince1970
         timeStamp = Int(CLongLong(round(timeInterval!*1000)))
         if timeStamp! - (socketConnector.timeStamp ?? 0)! > 1000 {
-            redLightWarning = false
+            haveTrafficLight = false
         } else {
-            redLightWarning = true
+            haveTrafficLight = true
         }
         
-        if redLightWarning == true && preRedLightWarning != redLightWarning {
+        if haveTrafficLight == true && preHaveTrafficLight != haveTrafficLight {
             print("start")
-            pipController?.startPictureInPicture()
-        } else if redLightWarning == false && preRedLightWarning != redLightWarning {
+            self.pipController?.startPictureInPicture()
+        } else if haveTrafficLight == false && preHaveTrafficLight != haveTrafficLight {
             print("stop")
-            pipController?.stopPictureInPicture()
+//            pipController?.stopPictureInPicture()
+            destroy()
         }
-        
-        preRedLightWarning = self.timeInstruction.redLightWarning
 
-        self.timeInstruction.redLightWarning = redLightWarning
+        preHaveTrafficLight = self.timeInstruction.haveTrafficLight
+
+        self.timeInstruction.haveTrafficLight = haveTrafficLight
+        self.timeInstruction.glosa = socketConnector.glosa
+        self.timeInstruction.decelRedBreak = socketConnector.decelRedBreak
         self.timeInstruction.lightTime = Double(socketConnector.lightTime)
         self.timeInstruction.lightStatus = socketConnector.lightStatus
         self.timeInstruction.recFloorSpeed = socketConnector.recFloorSpeed
@@ -190,8 +194,7 @@ extension ViewController {
         playerLayer = AVPlayerLayer()
         playerLayer.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
         playerLayer.position = view.center
-//        playerLayer.backgroundColor = UIColor.cyan.cgColor
-        playerLayer.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0).cgColor
+        playerLayer.backgroundColor = UIColor.cyan.cgColor
         view.layer.addSublayer(playerLayer)
         if !AVPictureInPictureController.isPictureInPictureSupported() {
             pipButton.setTitle("not support PIP, please use real device", for: .normal)
