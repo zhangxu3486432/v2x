@@ -11,6 +11,9 @@ import AVKit
 
 let urlStr: String = "17.87.18.129"
 let port: Int = 6000
+//let urlStr: String = "192.168.10.224"
+//let port: Int = 5050
+
 var count: Int = 0
 var now: Date?
 var timeInterval: TimeInterval?
@@ -22,6 +25,7 @@ var socketConnector:TCP_Communicator = TCP_Communicator(url: url, port: UInt32(p
 
 
 class ViewController: UIViewController {
+    var videoLife = false
     var asset: AVAsset!
     var item: AVPlayerItem!
     var player: AVPlayer!
@@ -30,14 +34,8 @@ class ViewController: UIViewController {
     var videoComposition: AVMutableVideoComposition!
     var playerLayer: AVPlayerLayer!
     var timeInstruction: TimeVideoCompositionInstruction!
-
-    let timeLabel = UILabel()
-
-    lazy var formatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss.S"
-        return formatter
-    }()
+    var preRedLightWarning: Bool?
+    var redLightWarning: Bool = false
 
     @IBOutlet weak var pipButton: UIButton!
 
@@ -45,6 +43,18 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupVideo()
+        self.videoLife = true
+    }
+    
+    func destroy() {
+        self.player = nil
+        self.videoLife = false
+        self.asset = nil
+        self.item = nil
+        self.observation = nil
+        self.pipController = nil
+        self.videoComposition = nil
+        self.playerLayer = nil
     }
 
     @IBAction func startPIP(_ sender: UIButton) {
@@ -67,19 +77,37 @@ class ViewController: UIViewController {
     }
 
     @objc func refresh(displaylink: CADisplayLink) {
+        if (!self.videoLife) {
+            self.viewDidLoad()
+        }
         reloadTime()
         item?.videoComposition = videoComposition
     }
     func reloadTime() {
+        if (preRedLightWarning == nil) {
+            preRedLightWarning = self.timeInstruction.redLightWarning
+        }
+        
         now = Date()
         timeInterval = now!.timeIntervalSince1970
         timeStamp = Int(CLongLong(round(timeInterval!*1000)))
-        if timeStamp! - (socketConnector.timeStamp ?? 0)! > 800 {
-            self.timeInstruction.redLightWarning = false
+        if timeStamp! - (socketConnector.timeStamp ?? 0)! > 1000 {
+            redLightWarning = false
         } else {
-            self.timeInstruction.redLightWarning = true
+            redLightWarning = true
         }
-        
+        if redLightWarning == true && preRedLightWarning != true {
+            print("---------------------------")
+            pipController?.startPictureInPicture()
+        } else if redLightWarning == false && preRedLightWarning != false {
+            print("---------")
+            pipController?.stopPictureInPicture()
+//            self.destroy()
+        }
+
+        preRedLightWarning = self.timeInstruction.redLightWarning
+
+        self.timeInstruction.redLightWarning = redLightWarning
         self.timeInstruction.lightTime = Double(socketConnector.lightTime)
         self.timeInstruction.lightStatus = socketConnector.lightStatus
         self.timeInstruction.recFloorSpeed = socketConnector.recFloorSpeed
@@ -159,7 +187,7 @@ extension ViewController {
         for layerInstruction in layerInstructions {
             trackIDs.append(layerInstruction.trackID)
         }
-        timeInstruction = TimeVideoCompositionInstruction(trackIDs as [NSValue], timeRange: instruction.timeRange, pipController: pipController)
+        timeInstruction = TimeVideoCompositionInstruction(trackIDs as [NSValue], timeRange: instruction.timeRange)
         timeInstruction.layerInstructions = layerInstructions
         newInstructions.append(timeInstruction)
         videoComposition.instructions = newInstructions
@@ -176,11 +204,9 @@ extension ViewController {
         playerLayer.position = view.center
         playerLayer.backgroundColor = UIColor.cyan.cgColor
         view.layer.addSublayer(playerLayer)
-
-        if !AVPictureInPictureController.isPictureInPictureSupported() {
-            pipButton.setTitle("not support PIP, please use real device", for: .normal)
-            pipButton.isEnabled = false
-        }
+//        if !AVPictureInPictureController.isPictureInPictureSupported() {
+//            pipButton.setTitle("not support PIP, please use real device", for: .normal)
+//            pipButton.isEnabled = false
+//        }
     }
 }
-

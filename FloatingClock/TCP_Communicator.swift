@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 var headStraight:[Int32] = [1, 6, 11, 16, 21, 26, 31, 36]
 var preTime: Float?
 var preLightSatus: String?

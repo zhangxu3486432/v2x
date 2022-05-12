@@ -20,9 +20,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var requiredSourceTrackIDs: [NSValue]?
     var passthroughTrackID = kCMPersistentTrackID_Invalid
     var layerInstructions:[AVVideoCompositionLayerInstruction]?
-    var preRedLightWarning: Bool?
     var redLightWarning: Bool = false
-    var pipController: AVPictureInPictureController?
     
     let greenSVG = UIImage(svgNamed: "green.svg")
     let yellowSVG = UIImage(svgNamed: "yellow.svg")
@@ -38,12 +36,11 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var recFloorSpeed: Double?
     
     
-    init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange, pipController: AVPictureInPictureController) {
+    init(_ requiredSourceTrackIDs: [NSValue]?, timeRange: CMTimeRange) {
         self.requiredSourceTrackIDs = requiredSourceTrackIDs
         self.timeRange = timeRange
-        self.pipController = pipController
     }
-    
+
     func getPixelBuffer(_ renderContext: AVVideoCompositionRenderContext) -> CVPixelBuffer? {
         let width = Int(renderContext.size.width)
         let height = Int(renderContext.size.height)
@@ -111,13 +108,6 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         var attributedString = NSAttributedString(string: title, attributes: attributes)
         var titleText = CTLineCreateWithAttributedString(attributedString)
         
-        if redLightWarning == true && preRedLightWarning != redLightWarning {
-            pipController?.startPictureInPicture()
-        } else if redLightWarning == false && preRedLightWarning != redLightWarning {
-            pipController?.stopPictureInPicture()
-        }
-        
-        preRedLightWarning = redLightWarning
         if redLightWarning {
             fontSize = 64
             font = CTFontCreateWithName(fontName, fontSize, nil)
@@ -157,7 +147,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             context.addPath(path)
             context.textPosition = CGPoint(x: 68, y: 240)
         }
-//        {
+//        else {
 //            title = "Green Light Speed"
 //            color = CGColor.init(red: 1, green: 1, blue: 1, alpha: 1)
 //            context.textPosition = CGPoint(x: 20, y: 240)

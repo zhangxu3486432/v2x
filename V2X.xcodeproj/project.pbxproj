@@ -73,6 +73,8 @@
 		344568C928001F1E004A82B3 /* line.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = line.bmp; sourceTree = "<group>"; };
 		344568D1280030FF004A82B3 /* sample.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = sample.svg; sourceTree = "<group>"; };
 		344A78B02805B33B00F560A9 /* warning.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = warning.svg; sourceTree = "<group>"; };
+		3497AEA4282B5DFD00BDDF41 /* XCTestInternal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTestInternal.framework; path = AppleInternal/Library/Frameworks/XCTestInternal.framework; sourceTree = SDKROOT; };
+		3497AEA6282B5E9200BDDF41 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		349DCBB427F5AF06008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		349DCBB527F5B088008ADD06 /* CocoaAsyncSocket */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CocoaAsyncSocket; path = ../CocoaAsyncSocket; sourceTree = "<group>"; };
 		34B9B90427F4429F005E03FB /* nebulalink.servercwaveii.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = nebulalink.servercwaveii.pb.swift; sourceTree = "<group>"; };
@@ -137,6 +139,8 @@
 		349DCBB627F5B112008ADD06 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3497AEA6282B5E9200BDDF41 /* XCTest.framework */,
+				3497AEA4282B5DFD00BDDF41 /* XCTestInternal.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -561,7 +565,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MC7DDU9294;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)$(APPLE_INTERNAL_LIBRARY_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FloatingClock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -581,7 +588,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MC7DDU9294;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)$(APPLE_INTERNAL_LIBRARY_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FloatingClock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
