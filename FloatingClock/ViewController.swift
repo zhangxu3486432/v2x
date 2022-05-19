@@ -8,6 +8,8 @@
 import UIKit
 import AVFoundation
 import AVKit
+import Alamofire
+
 
 let urlStr: String = "17.87.18.129"
 let port: Int = 6000
@@ -35,6 +37,7 @@ class ViewController: UIViewController {
     var timeInstruction: TimeVideoCompositionInstruction!
     var preHaveTrafficLight: Bool = false
     var haveTrafficLight: Bool = false
+    var haveICWWarning: Bool = false
 
     @IBOutlet weak var pipButton: UIButton!
 
@@ -65,6 +68,25 @@ class ViewController: UIViewController {
         print("Socket Connect")
         socketConnector.connect()
     }
+
+//        AF.request("https://service-da5hhzol-1254116918.bj.apigw.tencentcs.com/release/start/", method: .get)
+//            .response { response in
+//                print("start req")
+//            }
+//    @IBOutlet weak var initButton: UIButton!
+//    @IBAction func initV2X(_ sender: UIButton) {
+//        print("test")
+//        AF.request("https://service-da5hhzol-1254116918.bj.apigw.tencentcs.com/release/init/", method: .get)
+//            .response { response in
+//                do {
+//                    let data = response.data
+//                    print(data)
+//                } catch {
+//                    print("error")
+//                }
+//            }
+//    }
+    
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
                                         selector: #selector(refresh))
@@ -82,10 +104,16 @@ class ViewController: UIViewController {
         now = Date()
         timeInterval = now!.timeIntervalSince1970
         timeStamp = Int(CLongLong(round(timeInterval!*1000)))
-        if timeStamp! - (socketConnector.timeStamp ?? 0)! > 1000 {
+        if timeStamp! - (socketConnector.lighTimeStamp ?? 0)! > 1000 {
             haveTrafficLight = false
         } else {
             haveTrafficLight = true
+        }
+        
+        if timeStamp! - (socketConnector.icwTimeStamp ?? 0)! > 1000 {
+            haveICWWarning = false
+        } else {
+            haveICWWarning = true
         }
         
         if haveTrafficLight == true && preHaveTrafficLight != haveTrafficLight {
@@ -93,13 +121,18 @@ class ViewController: UIViewController {
             self.pipController?.startPictureInPicture()
         } else if haveTrafficLight == false && preHaveTrafficLight != haveTrafficLight {
             print("stop")
-//            pipController?.stopPictureInPicture()
-            destroy()
+            pipController?.stopPictureInPicture()
+//            destroy()
         }
 
         preHaveTrafficLight = self.timeInstruction.haveTrafficLight
-
+        
+        self.timeInstruction.currentSpeed = socketConnector.currentSpeed
+        self.timeInstruction.longitude = socketConnector.longitude
+        self.timeInstruction.latitude = socketConnector.latitude
+        
         self.timeInstruction.haveTrafficLight = haveTrafficLight
+        self.timeInstruction.ICW = haveICWWarning
         self.timeInstruction.glosa = socketConnector.glosa
         self.timeInstruction.decelRedBreak = socketConnector.decelRedBreak
         self.timeInstruction.lightTime = Double(socketConnector.lightTime)

@@ -29,6 +29,11 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     let warningSVG = UIImage(svgNamed: "warning.svg")
     let accelerateSVG = UIImage(svgNamed: "accelerate.svg")
     let decelerateSVG = UIImage(svgNamed: "decelerate.svg")
+    let icwSVG = UIImage(svgNamed: "icw.svg")
+    
+    var currentSpeed: Double?
+    var latitude: Double?
+    var longitude: Double?
     
     // render string
     var lightTime: Double = 0
@@ -37,6 +42,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var recUpperSpeed: Double?
     var recFloorSpeed: Double?
     var glosa: String?
+    var ICW: Bool?
     var decelRedBreak: Bool?
     var count = 0
     
@@ -83,8 +89,26 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         // Parameters
         var color: CGColor?
         var timeColor: CGColor?
-
-        if haveTrafficLight {
+        
+        if latitude==39.9998570 && longitude==116.3466815 {
+            context.fillPath(using: .evenOdd)
+            context.restoreGState()
+            CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
+            return pixelBuffer
+        }
+        
+        if ICW == true {
+            var rect = CGRect(x: (width - 320)/2, y: (height - 320)/2, width: 320, height: 320)
+            context.addRect(rect)
+            context.draw((icwSVG?.cgImage)!, in: rect)
+            var path = CGPath(
+                roundedRect: rect,
+                cornerWidth: 0.0,
+                cornerHeight: 0.0,
+                transform: nil
+            )
+            context.addPath(path)
+        } else if haveTrafficLight {
             var rect = CGRect(x: 420, y: 120, width: 200, height: 200)
             context.addRect(rect)
             
@@ -198,9 +222,9 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
             titleText = CTLineCreateWithAttributedString(attributedString)
             context.textPosition = CGPoint(x: 460, y: 60)
             CTLineDraw(titleText, context)
+        } else {
+            
         }
-//        else {
-//        }
 
         // 时间
 

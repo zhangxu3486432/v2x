@@ -19,10 +19,13 @@ class TCP_Communicator: NSObject, StreamDelegate {
     
     var now: Date?
     var timeInterval: TimeInterval?
-    var timeStamp: Int?
-    
+    var lighTimeStamp: Int?
+    var icwTimeStamp: Int?
+
     // current gps speed
     var currentSpeed: Double?
+    var latitude: Double?
+    var longitude: Double?
     
     var readStream: Unmanaged<CFReadStream>?
     var writeStream: Unmanaged<CFWriteStream>?
@@ -79,9 +82,39 @@ class TCP_Communicator: NSObject, StreamDelegate {
                         let hostInfo = try NebulalinkProMessage_HostInfo(serializedData: result.0)
                         if hostInfo.hostObuValue.first?.speed != nil {
                             currentSpeed = Double(hostInfo.hostObuValue.first!.speed)
+                            latitude = hostInfo.latitude
+                            longitude = hostInfo.longitude
                         }
                     } catch {
                         print("NebulalinkProMessage_HostInfo parse error")
+                    }
+                case "000B":
+                    do {
+                        let icw = try NebulalinkProMessage_WarningTarget(serializedData: result.0)
+//                        [V2X.NebulalinkProMessage_WarningTarget.WarningResult:
+//                        warning_event_type: 6
+//                        target_type: 1
+//                        target_angle: -0.7009804541190825
+//                        target_distance: 22.255772634019486
+//                        target_vehicle_type: 10
+//                        ttc: 1.4501512137911565
+//                        longitude: 121.2330684
+//                        latitude: 31.327113299999997
+//                        altitude: 8.1
+//                        speed: 8.12
+//                        heading: 189.4125
+//                        time: 1652421381
+//                        local_id: 27528
+//                        ]
+                        for warningResultItem in icw.warningResultValue {
+                            if warningResultItem.warningEventType == 6 {
+                                now = Date()
+                                timeInterval = now!.timeIntervalSince1970
+                                icwTimeStamp = Int(CLongLong(round(timeInterval!*1000)))
+                            }
+                        }
+                    } catch {
+                        print("icw error")
                     }
                 case "000F":
                     do {
@@ -95,7 +128,7 @@ class TCP_Communicator: NSObject, StreamDelegate {
                             } else {
                                 now = Date()
                                 timeInterval = now!.timeIntervalSince1970
-                                timeStamp = Int(CLongLong(round(timeInterval!*1000)))
+                                lighTimeStamp = Int(CLongLong(round(timeInterval!*1000)))
                             }
                             
                             let lightState = trafficLightResultItem.lightState
