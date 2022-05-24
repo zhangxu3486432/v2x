@@ -11,20 +11,6 @@ import AVKit
 import Alamofire
 
 
-let urlStr: String = "17.87.18.129"
-let port: Int = 6000
-//let urlStr: String = "192.168.10.224"
-//let port: Int = 5050
-
-var count: Int = 0
-var now: Date?
-var timeInterval: TimeInterval?
-var timeStamp: Int?
-
-let url = URL(string: urlStr)!
-
-var socketConnector:TCP_Communicator = TCP_Communicator(url: url, port: UInt32(port))
-
 
 class ViewController: UIViewController {
     var asset: AVAsset!
@@ -35,7 +21,6 @@ class ViewController: UIViewController {
     var videoComposition: AVMutableVideoComposition!
     var playerLayer: AVPlayerLayer!
     var timeInstruction: TimeVideoCompositionInstruction!
-    var preHaveTrafficLight: Bool = false
     var haveTrafficLight: Bool = false
     var haveICWWarning: Bool = false
 
@@ -58,34 +43,8 @@ class ViewController: UIViewController {
     }
 
     @IBAction func startPIP(_ sender: UIButton) {
-        socketConnector.connect()
-        let registerData:[UInt8] = [250, 251, 252, 253, 0, 1, 0, 175, 8, 1, 18, 11, 97, 112, 112, 108, 101, 95, 115, 119, 105, 102, 116, 26, 8, 8, 1, 16, 1, 24, 160, 141, 6, 26, 8, 8, 2, 16, 1, 24, 160, 141, 6, 26, 8, 8, 3, 16, 1, 24, 160, 141, 6, 26, 8, 8, 4, 16, 1, 24, 160, 141, 6, 26, 8, 8, 5, 16, 1, 24, 160, 141, 6, 26, 8, 8, 6, 16, 1, 24, 160, 141, 6, 26, 8, 8, 7, 16, 1, 24, 160, 141, 6, 26, 8, 8, 8, 16, 1, 24, 160, 141, 6, 26, 8, 8, 9, 16, 1, 24, 160, 141, 6, 26, 8, 8, 10, 16, 1, 24, 160, 141, 6, 26, 8, 8, 11, 16, 1, 24, 160, 141, 6, 26, 8, 8, 12, 16, 1, 24, 160, 141, 6, 26, 8, 8, 13, 16, 1, 24, 160, 141, 6, 26, 8, 8, 14, 16, 1, 24, 160, 141, 6, 26, 8, 8, 15, 16, 1, 24, 160, 141, 6, 26, 8, 8, 16, 16, 1, 24, 160, 141, 6, 234, 235, 236, 237]
-        socketConnector.send(buff: registerData)
         pipController?.startPictureInPicture()
     }
-    
-    @IBAction func V2XConnect(_ sender: UIButton) {
-        print("Socket Connect")
-        socketConnector.connect()
-    }
-
-//        AF.request("https://service-da5hhzol-1254116918.bj.apigw.tencentcs.com/release/start/", method: .get)
-//            .response { response in
-//                print("start req")
-//            }
-//    @IBOutlet weak var initButton: UIButton!
-//    @IBAction func initV2X(_ sender: UIButton) {
-//        print("test")
-//        AF.request("https://service-da5hhzol-1254116918.bj.apigw.tencentcs.com/release/init/", method: .get)
-//            .response { response in
-//                do {
-//                    let data = response.data
-//                    print(data)
-//                } catch {
-//                    print("error")
-//                }
-//            }
-//    }
     
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self,
@@ -101,44 +60,28 @@ class ViewController: UIViewController {
         item?.videoComposition = videoComposition
     }
     func reloadTime() {
-        now = Date()
-        timeInterval = now!.timeIntervalSince1970
-        timeStamp = Int(CLongLong(round(timeInterval!*1000)))
-        if timeStamp! - (socketConnector.lighTimeStamp ?? 0)! > 1000 {
-            haveTrafficLight = false
-        } else {
-            haveTrafficLight = true
-        }
-        
-        if timeStamp! - (socketConnector.icwTimeStamp ?? 0)! > 1000 {
-            haveICWWarning = false
-        } else {
-            haveICWWarning = true
-        }
-        
-        if haveTrafficLight == true && preHaveTrafficLight != haveTrafficLight {
-            print("start")
-            self.pipController?.startPictureInPicture()
-        } else if haveTrafficLight == false && preHaveTrafficLight != haveTrafficLight {
-            print("stop")
-            pipController?.stopPictureInPicture()
-//            destroy()
-        }
-
-        preHaveTrafficLight = self.timeInstruction.haveTrafficLight
-        
-        self.timeInstruction.currentSpeed = socketConnector.currentSpeed
-        self.timeInstruction.longitude = socketConnector.longitude
-        self.timeInstruction.latitude = socketConnector.latitude
-        
+        haveTrafficLight = true
+        haveICWWarning = false
         self.timeInstruction.haveTrafficLight = haveTrafficLight
         self.timeInstruction.ICW = haveICWWarning
-        self.timeInstruction.glosa = socketConnector.glosa
-        self.timeInstruction.decelRedBreak = socketConnector.decelRedBreak
-        self.timeInstruction.lightTime = Double(socketConnector.lightTime)
-        self.timeInstruction.lightStatus = socketConnector.lightStatus
-        self.timeInstruction.recFloorSpeed = socketConnector.recFloorSpeed
-        self.timeInstruction.recUpperSpeed = socketConnector.recUpperSpeed
+        
+        AF.request("http://172.20.10.3:5001/v2x", method: .get)
+            .responseJSON { response in
+                switch response.result {
+                    case .success(let value as [String: Any]):
+                        self.timeInstruction.over = value["over"] as! Bool
+                        self.timeInstruction.currentSpeed = value["current_speed"] as! Double
+                        self.timeInstruction.glosa = value["glosa"] as! String
+                        self.timeInstruction.decelRedBreak = false
+                        self.timeInstruction.lightTime = value["light_time"] as! Double
+                        self.timeInstruction.lightStatus = value["light_status"] as! String
+                        self.timeInstruction.recFloorSpeed = value["floor_speed"] as! Double
+                        self.timeInstruction.recUpperSpeed = value["upper_speed"] as! Double
+                    case .failure(let error):
+                        debugPrint("Failure: \(error)")
+                    default: fatalError("Fatal error.")
+                }
+            }
     }
 }
 

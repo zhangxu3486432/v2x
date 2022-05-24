@@ -32,8 +32,6 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     let icwSVG = UIImage(svgNamed: "icw.svg")
     
     var currentSpeed: Double?
-    var latitude: Double?
-    var longitude: Double?
     
     // render string
     var lightTime: Double = 0
@@ -44,7 +42,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
     var glosa: String?
     var ICW: Bool?
     var decelRedBreak: Bool?
-    var count = 0
+    var over: Bool?
     
 //    var fontSize: CGFloat = 46
 //    let fontName = "San Francisco" as CFString
@@ -90,7 +88,7 @@ class TimeVideoCompositionInstruction:NSObject, AVVideoCompositionInstructionPro
         var color: CGColor?
         var timeColor: CGColor?
         
-        if latitude==39.9998570 && longitude==116.3466815 {
+        if over==true {
             context.fillPath(using: .evenOdd)
             context.restoreGState()
             CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
